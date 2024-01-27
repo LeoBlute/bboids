@@ -1,6 +1,6 @@
 # bboids
 ### bboids or bevy_boids is an implementation of the boid/flocking algorithm in the bevy engine/ecosystem<br />
-it also implements simple spatial hashing for performance support<br />
+it also implements simple spatial hashing algorithm based on [a similar project](https://github.com/kvietcong/rusty-boids)<br />
 
 ### the porpuse of the algorithm is to simulate "bird-like" behavior through 3 simple rules:<br />
 1. separation<br />
