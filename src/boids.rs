@@ -7,6 +7,7 @@ use crate::hash_grid::*;
 pub const BOUNDS: Vec2 = Vec2::splat(100.0);
 pub const STARTING_VELOCITY: f32 = 100.0;
 pub const BOID_SIZE: f32 = 1.0;
+pub const ASSET_PATH: &str = "asset.png";
 
 #[derive(Clone, Default)]
 pub struct BoidsPlugin;
@@ -40,6 +41,32 @@ struct Boid {
 struct BoidBundle {
 	sprite_bundle: SpriteBundle,
 	boid: Boid,
+}
+
+fn create_boids(commands: &mut Commands, asset_server: &Res<AssetServer>, count: usize){
+	let mut boid = BoidBundle {
+		sprite_bundle: SpriteBundle {
+			sprite: Sprite {
+				custom_size: Some(Vec2::splat(BOID_SIZE)),
+				..default()
+			},
+			texture: asset_server.load(ASSET_PATH),
+			..default()
+		},
+		..default()
+	};
+
+	let mut rng = rand::thread_rng();
+
+	for _ in 0..count {
+		let x = rng.gen_range(-BOUNDS.x..BOUNDS.x);
+		let y = rng.gen_range(-BOUNDS.y..BOUNDS.y);
+		let vx = rng.gen_range(-STARTING_VELOCITY..STARTING_VELOCITY);
+		let vy = rng.gen_range(-STARTING_VELOCITY..STARTING_VELOCITY);
+		boid.sprite_bundle.transform = Transform::from_xyz(x, y, 100.0);
+		boid.boid.velocity = Vec2::new(vx, vy);
+		commands.spawn(boid.clone());
+	}
 }
 
 impl Plugin for BoidsPlugin {
@@ -91,29 +118,7 @@ fn update_count(
 			commands.entity(id).despawn();
 		}
 	} else if current < count {
-		let mut boid = BoidBundle {
-			sprite_bundle: SpriteBundle {
-				sprite: Sprite {
-					custom_size: Some(Vec2::splat(BOID_SIZE)),
-					..default()
-				},
-				texture: r_asset_server.load("asset.png"),
-				..default()
-			},
-			..default()
-		};
-
-		let mut rng = rand::thread_rng();
-
-		for _ in 0..disparity {
-			let x = rng.gen_range(-BOUNDS.x..BOUNDS.x);
-			let y = rng.gen_range(-BOUNDS.y..BOUNDS.y);
-			let vx = rng.gen_range(-STARTING_VELOCITY..STARTING_VELOCITY);
-			let vy = rng.gen_range(-STARTING_VELOCITY..STARTING_VELOCITY);
-			boid.sprite_bundle.transform = Transform::from_xyz(x, y, 100.0);
-			boid.boid.velocity = Vec2::new(vx, vy);
-			commands.spawn(boid.clone());
-		}
+		create_boids(&mut commands, &r_asset_server, disparity);
 	}
 }
 
@@ -159,29 +164,7 @@ fn setup(
 	};
 	commands.spawn(bounds_area);
 
-	let mut boid = BoidBundle {
-		sprite_bundle: SpriteBundle {
-			sprite: Sprite {
-				custom_size: Some(Vec2::splat(BOID_SIZE)),
-				..default()
-			},
-			texture: r_asset_server.load("asset.png"),
-			..default()
-		},
-		..default()
-	};
-
-	let mut rng = rand::thread_rng();
-
-	for _ in 0..r_values.count {
-		let x = rng.gen_range(-BOUNDS.x..BOUNDS.x);
-		let y = rng.gen_range(-BOUNDS.y..BOUNDS.y);
-		let vx = rng.gen_range(-STARTING_VELOCITY..STARTING_VELOCITY);
-		let vy = rng.gen_range(-STARTING_VELOCITY..STARTING_VELOCITY);
-		boid.sprite_bundle.transform = Transform::from_xyz(x, y, 100.0);
-		boid.boid.velocity = Vec2::new(vx, vy);
-		commands.spawn(boid.clone());
-	}
+	create_boids(&mut commands, &r_asset_server, r_values.count);
 }
 
 fn update_hash_grid(
@@ -227,7 +210,6 @@ fn calculate_velocity(
 				};
 				if distance < r_values.protected_range {
 					//Separation factor
-					//close += pos - other_pos;
 					close += (pos - other_pos).normalize() / distance;
 					avoid_count +=1;
 				}

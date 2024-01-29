@@ -11,8 +11,18 @@ bevy_egui = "0.24.0"
 rand = "0.8.5"
 rayon = "1.8.1"
 
-[profile.dev.packages.bevy]
+#Changing the opt-level will change the algorithm in some ways, more visible change occurs on the matching factor
+#[profile.dev]
+#opt-level = 3
+
+[profile.dev.package.bevy]
 opt-level = 3
 
-[profile.dev.packages.bevy_egui]
-opt-level = 1
+[profile.dev.package.bevy_egui]
+opt-level = 3
+
+[profile.dev.package.rand]
+opt-level = 3
+
+[profile.dev.package.rayon]
+opt-level = 3
